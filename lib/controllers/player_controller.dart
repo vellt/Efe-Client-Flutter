@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:get/get.dart';
 import 'package:uk_vocabulary_builder_flutter/model/audio.dart';
+import 'package:uk_vocabulary_builder_flutter/api/secret.dart' as secret;
 
 class PlayerController extends GetxController {
   AudioPlayer _advancedPlayer = AudioPlayer();
@@ -56,7 +57,8 @@ class PlayerController extends GetxController {
 
   //play
   void resume() async {
-    await _advancedPlayer.play(playlist[currentAudioIndex].voiceUrl);
+    await _advancedPlayer
+        .play("${secret.assetsUrl}${playlist[currentAudioIndex].voiceUrl}");
   }
 
   //pause

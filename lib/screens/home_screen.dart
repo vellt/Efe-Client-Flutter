@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
+import 'package:uk_vocabulary_builder_flutter/api/data_fetcher.dart';
+import 'package:uk_vocabulary_builder_flutter/controllers/player_controller.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 import 'package:uk_vocabulary_builder_flutter/widgets/home_appbar_content.dart';
 import 'package:uk_vocabulary_builder_flutter/widgets/voice_element.dart';
-import 'package:uk_vocabulary_builder_flutter/api/vocabulary_fetch_brain.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late VocabularyFetchBrain brain;
+  late DataFetcher brain;
 
   late AudioPlayer audioPlayer;
   late AudioCache audioCache;
@@ -34,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initData() async {
     audioPlayer = AudioPlayer();
     //get saved lesson:
-    brain = VocabularyFetchBrain(currentLessonID: "1.1");
+    brain = DataFetcher(currentLessonID: "1.1");
     bool result = await brain.initialization();
     setState(() {
       initOfVocabularyBrain = result;
@@ -221,105 +223,132 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                body: Column(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w),
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5.h),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(bottom: 3.h),
-                                  child: Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Text(
-                                      brain.getCurrentLessonData()!.title,
-                                      style: kHomeTitleTextStyle,
-                                    ),
+                body: GetX<PlayerController>(
+                    init: PlayerController(playlist: []),
+                    builder: (controller) {
+                      return Column(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.w),
+                              child: SingleChildScrollView(
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 5.h),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.only(bottom: 3.h),
+                                        child: Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                brain
+                                                    .getCurrentLessonData()!
+                                                    .title,
+                                                style: kHomeTitleTextStyle,
+                                              ),
+                                              if (brain
+                                                      .getCurrentLessonData()!
+                                                      .subtitle !=
+                                                  null)
+                                                Text(
+                                                    brain
+                                                        .getCurrentLessonData()!
+                                                        .subtitle!,
+                                                    style:
+                                                        kHomeSubTitleTextStyle),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                          padding: EdgeInsets.only(bottom: 3.h),
+                                          child: (voices.length == 0)
+                                              ? Icon(
+                                                  CupertinoIcons.speaker_slash,
+                                                  size: 30.h,
+                                                  color: kMiddleGrayColor,
+                                                )
+                                              : Align(
+                                                  alignment: Alignment.topLeft,
+                                                  child: Wrap(
+                                                    spacing: 7.w,
+                                                    runSpacing: 7.w,
+                                                    children: voices,
+                                                  ),
+                                                )),
+                                    ],
                                   ),
                                 ),
-                                Padding(
-                                    padding: EdgeInsets.only(bottom: 3.h),
-                                    child: (voices.length == 0)
-                                        ? Icon(
-                                            CupertinoIcons.speaker_slash,
-                                            size: 30.h,
-                                            color: kMiddleGrayColor,
-                                          )
-                                        : Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Wrap(
-                                              spacing: 7.w,
-                                              runSpacing: 7.w,
-                                              children: voices,
-                                            ),
-                                          )),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                    if (visible)
-                      AnimatedContainer(
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Color(0xFFEFEFEF))),
-                        height: heightValue,
-                        duration: Duration(milliseconds: 300),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                stopOrStartPlaying(
-                                    _position != Duration(seconds: 0) &&
-                                        isPlayed == false);
-                              },
-                              icon: Icon((_position != Duration(seconds: 0) &&
-                                      isPlayed == false)
-                                  ? Icons.pause
-                                  : Icons.play_arrow),
-                              iconSize: 25.sp,
-                              color: Color(0xFF9A9A9A),
-                            ),
-                            Text(format(_position),
-                                style: TextStyle(
-                                    fontSize: 13.sp, color: Color(0xFFBBBBBB))),
-                            Slider(
-                                activeColor: kMainDarkGrayColor,
-                                inactiveColor: Color(0xFFEFEFEF),
-                                value: _position.inSeconds.toDouble(),
-                                min: 0.0,
-                                max: _duration.inSeconds.toDouble(),
-                                onChanged: (double value) {
-                                  setState(() {
-                                    seekToSecond(value.toInt());
-                                    value = value;
-                                  });
-                                }),
-                            Text(
-                              format(_duration),
-                              style: TextStyle(
-                                  fontSize: 13.sp, color: Color(0xFFBBBBBB)),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                stopPlaying();
-                                widgetVisibilityChange(false);
-                              },
-                              icon: Icon(CupertinoIcons.xmark),
-                              color: Color(0xFF9A9A9A),
-                            ),
-                          ],
-                        ),
-                      )
-                  ],
-                ),
+                          if (visible)
+                            AnimatedContainer(
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Color(0xFFEFEFEF))),
+                              height: heightValue,
+                              duration: Duration(milliseconds: 300),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      stopOrStartPlaying(
+                                          _position != Duration(seconds: 0) &&
+                                              isPlayed == false);
+                                    },
+                                    icon: Icon(
+                                        (_position != Duration(seconds: 0) &&
+                                                isPlayed == false)
+                                            ? Icons.pause
+                                            : Icons.play_arrow),
+                                    iconSize: 25.sp,
+                                    color: Color(0xFF9A9A9A),
+                                  ),
+                                  Text(format(_position),
+                                      style: TextStyle(
+                                          fontSize: 13.sp,
+                                          color: Color(0xFFBBBBBB))),
+                                  Slider(
+                                      activeColor: kMainDarkGrayColor,
+                                      inactiveColor: Color(0xFFEFEFEF),
+                                      value: _position.inSeconds.toDouble(),
+                                      min: 0.0,
+                                      max: _duration.inSeconds.toDouble(),
+                                      onChanged: (double value) {
+                                        setState(() {
+                                          seekToSecond(value.toInt());
+                                          value = value;
+                                        });
+                                      }),
+                                  Text(
+                                    format(_duration),
+                                    style: TextStyle(
+                                        fontSize: 13.sp,
+                                        color: Color(0xFFBBBBBB)),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      stopPlaying();
+                                      widgetVisibilityChange(false);
+                                    },
+                                    icon: Icon(CupertinoIcons.xmark),
+                                    color: Color(0xFF9A9A9A),
+                                  ),
+                                ],
+                              ),
+                            )
+                        ],
+                      );
+                    }),
               );
   }
 }

@@ -14,6 +14,12 @@ final kHomeTitleTextStyle = TextStyle(
   fontSize: 28.sp,
   fontWeight: FontWeight.bold,
 );
+final kHomeSubTitleTextStyle = TextStyle(
+  color: kNightGrayColor,
+  fontSize: 28.sp,
+  fontWeight: FontWeight.w300,
+);
+
 final kHomeSearchTextStyle = TextStyle(
   color: kWhite,
   fontSize: 13.sp,
