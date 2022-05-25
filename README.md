@@ -1,4 +1,4 @@
-# English for Everyone Client
+# English for Everyone Client BETA!!
 
 English for Everyone is a smart, simple new way to teach yourself the English language. This highly visual course uses graphics and pictures instead of wordy explanations, making vocab and grammar easy to remember. And with extensive supporting audio, and innovative exercises covering all the core language skills, learning English has never been easier.
 
