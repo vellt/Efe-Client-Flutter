@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
 //theme
-final kTheme = ThemeData().copyWith(
+final kTheme = ThemeData.light().copyWith(
   platform: TargetPlatform.iOS,
   primaryColor: kWhite,
   scaffoldBackgroundColor: kWhite,
@@ -18,6 +18,12 @@ final kHomeSubTitleTextStyle = TextStyle(
   color: kNightGrayColor,
   fontSize: 28.sp,
   fontWeight: FontWeight.w300,
+);
+
+final kAudioPlayerTitleTextStyle = TextStyle(
+  fontSize: 25.sp,
+  fontWeight: FontWeight.w300,
+  color: kMainDarkGrayColor,
 );
 
 final kHomeSearchTextStyle = TextStyle(

@@ -1,40 +1,39 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:get/get.dart';
-import 'package:uk_vocabulary_builder_flutter/model/audio.dart';
 import 'package:uk_vocabulary_builder_flutter/api/secret.dart' as secret;
+import 'package:uk_vocabulary_builder_flutter/utils/duration_extensions.dart';
 
 class PlayerController extends GetxController {
-  AudioPlayer _advancedPlayer = AudioPlayer();
-  Duration duration = Duration(seconds: 0);
-  Duration position = Duration(seconds: 0);
-  PlayerState playState = PlayerState.STOPPED;
+  final AudioPlayer _advancedPlayer = AudioPlayer();
+  Rx<Duration> duration = Duration(seconds: 0).obs;
+  Rx<Duration> position = Duration(seconds: 0).obs;
+  Rx<PlayerState> playState = PlayerState.STOPPED.obs;
 
-  int currentAudioIndex = 0;
-  var playlist = <Audio>[];
-  PlayerController({required this.playlist});
+  final Rx<int> currentPlayedAudioIndex = 0.obs;
+  List<String> audioSources = <String>[];
+
+  Rx<bool> get isPlaying => (playState.value == PlayerState.PLAYING).obs;
 
   @override
   void onInit() {
     super.onInit();
 
     _advancedPlayer.onDurationChanged.listen((d) {
-      duration = d;
-      update();
+      print("aktuélis duratció: ${d}");
+      duration.value = d;
     });
 
     _advancedPlayer.onAudioPositionChanged.listen((p) {
-      position = p;
-      update();
+      print("aktuélis pozicoo: ${p}");
+      position.value = p;
     });
 
     _advancedPlayer.onPlayerStateChanged.listen((PlayerState state) {
-      playState = state;
-      update();
+      playState.value = state;
     });
 
     _advancedPlayer.onPlayerCompletion.listen((event) {
-      position = duration;
-      update();
+      position.value = duration.value;
     });
   }
 
@@ -44,21 +43,28 @@ class PlayerController extends GetxController {
     super.onClose();
   }
 
+  //gorgetni lehet a hangban lejatszas kozben
+  set setPositionValue(double value) =>
+      _advancedPlayer.seek(Duration(seconds: value.toInt()));
+
   //resume or pause
   void resumeOrPause() async {
-    (playState == PlayerState.PLAYING) ? pause() : resume();
+    (playState.value == PlayerState.PLAYING) ? pause() : resume();
   }
 
   //play from the 0 second
-  void play() async {
+  void play(int index) async {
+    print(
+        "start: ${position.value.timeFormat} end: ${duration.value.timeFormat}");
+    currentPlayedAudioIndex.value = index;
     stop();
     resume();
   }
 
   //play
   void resume() async {
-    await _advancedPlayer
-        .play("${secret.assetsUrl}${playlist[currentAudioIndex].voiceUrl}");
+    await _advancedPlayer.play(
+        "${secret.assetsBaseUrl}${audioSources[currentPlayedAudioIndex.value]}");
   }
 
   //pause
@@ -70,20 +76,17 @@ class PlayerController extends GetxController {
   void stop() async {
     int result = await _advancedPlayer.stop();
     if (result == 1) {
-      position = Duration(seconds: 0);
+      position.value = Duration(seconds: 0);
     }
   }
 
   void next() {
-    if (currentAudioIndex + 1 != playlist.length) currentAudioIndex++;
-    play();
+    if (currentPlayedAudioIndex.value + 1 != audioSources.length)
+      play(++currentPlayedAudioIndex.value);
   }
 
   void back() {
-    if (currentAudioIndex - 1 != -1) currentAudioIndex--;
-    play();
+    if (currentPlayedAudioIndex.value - 1 != -1)
+      play(--currentPlayedAudioIndex.value);
   }
-
-  set setPositionValue(double value) =>
-      _advancedPlayer.seek(Duration(seconds: value.toInt()));
 }

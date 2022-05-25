@@ -1,354 +1,250 @@
-import 'dart:async';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
-import 'package:uk_vocabulary_builder_flutter/api/data_fetcher.dart';
+import 'package:uk_vocabulary_builder_flutter/controllers/api_lesson_controller.dart';
 import 'package:uk_vocabulary_builder_flutter/controllers/player_controller.dart';
+import 'package:uk_vocabulary_builder_flutter/model/book.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
+import 'package:uk_vocabulary_builder_flutter/widgets/audio_widget.dart';
+import 'package:uk_vocabulary_builder_flutter/widgets/bottom_sheet_list_item.dart';
+import 'package:uk_vocabulary_builder_flutter/widgets/custom_bottom_sheet.dart';
 import 'package:uk_vocabulary_builder_flutter/widgets/home_appbar_content.dart';
-import 'package:uk_vocabulary_builder_flutter/widgets/voice_element.dart';
+import 'package:uk_vocabulary_builder_flutter/widgets/audio_player.dart';
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
+class HomeScreen extends StatelessWidget {
+  late Book book;
+  HomeScreen({required this.book}) {
+    apiLessonController.lessonRoute = book.route;
+  }
 
-class _HomeScreenState extends State<HomeScreen> {
-  late DataFetcher brain;
-
-  late AudioPlayer audioPlayer;
-  late AudioCache audioCache;
-  Duration _duration = Duration();
-  Duration _position = Duration();
-
-  late List<VoiceElement> voices;
-  bool? initOfVocabularyBrain;
-
-  int? activeVoice;
-
-  bool isPlayed = true;
-
-  String currentVoiceURL = "";
+  final ApiLessonController apiLessonController =
+      Get.put(ApiLessonController());
+  final playerController = Get.put(PlayerController());
 
   void initData() async {
-    audioPlayer = AudioPlayer();
-    //get saved lesson:
-    brain = DataFetcher(currentLessonID: "1.1");
-    bool result = await brain.initialization();
-    setState(() {
-      initOfVocabularyBrain = result;
-    });
+    await apiLessonController.onInit();
   }
 
-  void loadAudioContentFromData() {
-    if (initOfVocabularyBrain != null) {
-      voices = [];
-      for (var i = 0; i < brain.getCurrentLessonData()!.audios.length; i++) {
-        voices.add(VoiceElement(
-          title: brain.getCurrentLessonData()!.audios[i].title,
-          voiceUrl: brain.getCurrentLessonData()!.audios[i].voiceUrl,
-          isActive: (activeVoice == i),
-          isPlaying: (activeVoice == i &&
-              _position != Duration(seconds: 0) &&
-              isPlayed == false),
-          isLoading: (activeVoice == i &&
-              _position == Duration(seconds: 0) &&
-              isPlayed == false),
-          onPressed: (String voice) {
-            _position = Duration(seconds: 0);
-            currentVoiceURL = voice;
-            stopOrStartPlaying(!true);
-            audioPlayer.onAudioPositionChanged.listen((event) => setState(() {
-                  _position = event;
-                }));
-            audioPlayer.onPlayerCompletion.listen((_) => setState(() {
-                  isPlayed = true;
-                }));
-
-            audioPlayer.onDurationChanged.listen((event) => setState(() {
-                  _duration = event;
-                }));
-
-            activeVoice = i;
-            widgetVisibilityChange(true);
-          },
-        ));
-      }
+  //betölti a lecke hangjait
+  List<Widget> loadAudioContent(BuildContext context) {
+    List<Widget> temp = [];
+    for (var i = 0; i < apiLessonController.getLesson.audios.length; i++) {
+      var audioData = apiLessonController.getLesson.audios[i];
+      temp.add(AudioWidget(
+        id: i,
+        audioData: audioData,
+        onPressed: () => playerController.play(i),
+        onLongPressed: () => _showBottomSheet(context),
+        isActive: false,
+        isLoading: false,
+        isPlaying: false,
+      ));
     }
+    return temp;
   }
 
-  Future<dynamic> showErrorDialog(String text) {
-    return showDialog(
+  //betölti a lejátszót
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Input Error"),
-          content: Text("The $text isn't in the book"),
-          actions: [
-            TextButton(
-              child: Text("OK"),
-              onPressed: () => Navigator.of(context).pop(),
+      builder: (context) {
+        return Obx(
+          () => CustomBottomSheet(
+            title: Text(
+              apiLessonController.getLesson
+                  .audios[playerController.currentPlayedAudioIndex.value].title,
+              style: kAudioPlayerTitleTextStyle,
             ),
-          ],
+            child: audioPlayer(context, playerController: playerController),
+            children: [
+              audioPlayer(context, playerController: playerController),
+              bottomSheetListItem(
+                context,
+                icon: Icons.add,
+                title: 'Add to favorites',
+                onClick: () => print("added favorite"),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  format(Duration d) {
-    String minute =
-        int.parse(d.toString().split('.').first.padLeft(8, "0").split(':')[1])
-            .toString();
-    String second = d.toString().split('.').first.padLeft(8, "0").split(':')[2];
-    return ("$minute:$second");
-  }
-
-  void seekToSecond(int second) {
-    Duration newDuration = Duration(seconds: second);
-    audioPlayer.seek(newDuration);
-  }
-
-  void stopPlaying() {
-    audioPlayer.stop();
-    setState(() {
-      _position = Duration(seconds: 0);
-      isPlayed = true;
-    });
-  }
-
-  void stopOrStartPlaying(bool condition) async {
-    if (!condition) {
-      int result = await audioPlayer.play(currentVoiceURL);
-      if (result == 1) {
-        //success
-        print("folytatas");
-        setState(() {
-          isPlayed = false;
-        });
-      }
-    } else {
-      audioPlayer.pause();
-      print("megallit");
-      setState(() {
-        isPlayed = true;
-      });
-    }
-  }
-
-  bool visible = false;
-
-  void widgetVisibilityChange(bool visibleData) {
-    setState(() {
-      visible = visibleData;
-      print(">>>>>>>>>>>>>>>$visible");
-    });
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    initData();
-    Timer(Duration(seconds: 0), () {
-      setState(() {
-        heightValue = 10.h;
-      });
-    });
-  }
-
-  double heightValue = 0;
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
+  //----------------------------------------------------------content----------------------
 
   @override
   Widget build(BuildContext context) {
-    loadAudioContentFromData();
-    return (initOfVocabularyBrain == null)
-        ? Center(
-            child: CircularProgressIndicator(
-              color: kMainDarkGrayColor,
-            ),
-          )
-        : (initOfVocabularyBrain == false)
-            ? Align(
+    return FutureBuilder(
+        future: apiLessonController.onInit(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            //inicializálás befejeződött
+            if (!apiLessonController.isFetchingSuccess) {
+              //nem sikerült adatot betölteni
+              return Align(
                 alignment: Alignment.center,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text("Internet lost!"),
                     IconButton(
-                      onPressed: () {
-                        setState(() {
-                          initData();
-                        });
-                      },
+                      onPressed: () =>
+                          Get.appUpdate(), //todo ez tuti nem mukodik!!
                       icon: Icon(CupertinoIcons.refresh),
                     )
                   ],
                 ),
-              )
-            : Scaffold(
-                appBar: AppBar(
-                  bottom: PreferredSize(
-                    preferredSize: Size.fromHeight(6.h),
-                    child: HomeAppBarContent(
-                      currentValue: brain.getCurrentLessonID(),
-                      onSubmitted: (String text) {
-                        setState(() {
-                          activeVoice = null;
-                          if (!brain.goToLesson(text)) {
-                            showErrorDialog(text);
-                          }
-                        });
-                      },
-                      backOnPressed: () {
-                        setState(() {
-                          activeVoice = null;
-                          brain.previousLesson();
-                        });
-                      },
-                      nextOnPressed: () {
-                        setState(() {
-                          activeVoice = null;
-                          brain.nextLesson();
-                        });
-                      },
+              );
+            } else {
+              //sikerült adatot betölteni
+              return Scaffold(
+                  appBar: AppBar(
+                    bottom: PreferredSize(
+                      preferredSize: Size.fromHeight(6.h),
+                      child: Obx(
+                        () {
+                          playerController.audioSources = apiLessonController
+                              .getAudioSources(); //betöltjök a lejátszóba a hangokat
+                          return HomeAppBarContent(
+                            currentValue: apiLessonController.getLesson.id,
+                            onSubmitted: (text) =>
+                                apiLessonController.openLesson(text),
+                            backOnPressed: () =>
+                                apiLessonController.backLesson(),
+                            nextOnPressed: () =>
+                                apiLessonController.nextLesson(),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-                body: GetX<PlayerController>(
-                    init: PlayerController(playlist: []),
-                    builder: (controller) {
-                      return Column(
-                        children: [
-                          Expanded(
+                  body: Column(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.w),
+                          child: SingleChildScrollView(
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.w),
-                              child: SingleChildScrollView(
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 5.h),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.only(bottom: 3.h),
-                                        child: Align(
-                                          alignment: Alignment.topLeft,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
+                              padding: EdgeInsets.symmetric(vertical: 5.h),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(bottom: 3.h),
+                                    child: Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Obx(
+                                        () => Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              apiLessonController
+                                                  .getLesson.title,
+                                              style: kHomeTitleTextStyle,
+                                            ),
+                                            if (apiLessonController
+                                                    .getLesson.subtitle !=
+                                                null)
                                               Text(
-                                                brain
-                                                    .getCurrentLessonData()!
-                                                    .title,
-                                                style: kHomeTitleTextStyle,
-                                              ),
-                                              if (brain
-                                                      .getCurrentLessonData()!
-                                                      .subtitle !=
-                                                  null)
-                                                Text(
-                                                    brain
-                                                        .getCurrentLessonData()!
-                                                        .subtitle!,
-                                                    style:
-                                                        kHomeSubTitleTextStyle),
-                                            ],
-                                          ),
+                                                  apiLessonController
+                                                      .getLesson.subtitle!,
+                                                  style:
+                                                      kHomeSubTitleTextStyle),
+                                          ],
                                         ),
                                       ),
-                                      Padding(
+                                    ),
+                                  ),
+                                  Obx(
+                                    () => Column(
+                                      children: [
+                                        Padding(
                                           padding: EdgeInsets.only(bottom: 3.h),
-                                          child: (voices.length == 0)
-                                              ? Icon(
-                                                  CupertinoIcons.speaker_slash,
-                                                  size: 30.h,
-                                                  color: kMiddleGrayColor,
+                                          child: (apiLessonController.getLesson
+                                                      .audios.length ==
+                                                  0)
+                                              ? Column(
+                                                  children: [
+                                                    Align(
+                                                      alignment:
+                                                          Alignment.center,
+                                                      child: Icon(
+                                                        CupertinoIcons
+                                                            .tray_fill, //CupertinoIcons.speaker_slash,
+                                                        size: 30.h,
+                                                        color: kMiddleGrayColor,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      "Empty",
+                                                      style:
+                                                          kHomeSubTitleTextStyle,
+                                                    )
+                                                  ],
                                                 )
                                               : Align(
                                                   alignment: Alignment.topLeft,
                                                   child: Wrap(
                                                     spacing: 7.w,
                                                     runSpacing: 7.w,
-                                                    children: voices,
+                                                    children: loadAudioContent(
+                                                        context), //ide jönnek a konkrét voice widgetek
                                                   ),
-                                                )),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          if (visible)
-                            AnimatedContainer(
-                              decoration: BoxDecoration(
-                                  border: Border.all(color: Color(0xFFEFEFEF))),
-                              height: heightValue,
-                              duration: Duration(milliseconds: 300),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  IconButton(
-                                    onPressed: () {
-                                      stopOrStartPlaying(
-                                          _position != Duration(seconds: 0) &&
-                                              isPlayed == false);
-                                    },
-                                    icon: Icon(
-                                        (_position != Duration(seconds: 0) &&
-                                                isPlayed == false)
-                                            ? Icons.pause
-                                            : Icons.play_arrow),
-                                    iconSize: 25.sp,
-                                    color: Color(0xFF9A9A9A),
-                                  ),
-                                  Text(format(_position),
-                                      style: TextStyle(
-                                          fontSize: 13.sp,
-                                          color: Color(0xFFBBBBBB))),
-                                  Slider(
-                                      activeColor: kMainDarkGrayColor,
-                                      inactiveColor: Color(0xFFEFEFEF),
-                                      value: _position.inSeconds.toDouble(),
-                                      min: 0.0,
-                                      max: _duration.inSeconds.toDouble(),
-                                      onChanged: (double value) {
-                                        setState(() {
-                                          seekToSecond(value.toInt());
-                                          value = value;
-                                        });
-                                      }),
-                                  Text(
-                                    format(_duration),
-                                    style: TextStyle(
-                                        fontSize: 13.sp,
-                                        color: Color(0xFFBBBBBB)),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {
-                                      stopPlaying();
-                                      widgetVisibilityChange(false);
-                                    },
-                                    icon: Icon(CupertinoIcons.xmark),
-                                    color: Color(0xFF9A9A9A),
+                                                ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  floatingActionButton: Obx(
+                    () => Container(
+                      child: (playerController.isPlaying.value)
+                          ? Padding(
+                              padding: EdgeInsets.only(right: 10.sp), //15 volt!
+                              child: FloatingActionButton(
+                                backgroundColor: Color(0xFF707070),
+                                onPressed: () => _showBottomSheet(context),
+                                child: Stack(
+                                  children: [
+                                    SpinKitRipple(
+                                      color: Color(0xFF636363),
+                                      size: 80.sp,
+                                    ),
+                                    Center(
+                                        child: Icon(
+                                      CupertinoIcons.waveform_path,
+                                      size: 20.sp,
+                                      color: Colors.white,
+                                    )),
+                                  ],
+                                ),
+                              ),
                             )
-                        ],
-                      );
-                    }),
-              );
+                          : Container(),
+                    ),
+                  ));
+            }
+          } else {
+            return Center(
+              child: CircularProgressIndicator(
+                color: kMainDarkGrayColor,
+              ),
+            );
+          }
+        });
   }
 }

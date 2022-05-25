@@ -1,21 +1,21 @@
-import 'dart:async';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
+import 'package:uk_vocabulary_builder_flutter/model/book.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 
 import 'home_screen.dart';
 
+//landing page
+//https://blog.criarsolutions.com/bottom-navigation-bar-in-flutter-using-getx-e88da21bc126
 class FrameScreen extends StatefulWidget {
+  late Book book;
+  FrameScreen({required this.book});
   @override
   FrameScreenState createState() => FrameScreenState();
 }
 
 class FrameScreenState extends State<FrameScreen> {
-  bool visible = true;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -28,18 +28,6 @@ class FrameScreenState extends State<FrameScreen> {
 
   int _selectedIndex = 0;
 
-  List<Widget> _pages = [
-    HomeScreen(),
-    Icon(
-      Icons.camera,
-      size: 150,
-    ),
-    Icon(
-      Icons.chat,
-      size: 150,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +36,17 @@ class FrameScreenState extends State<FrameScreen> {
           child: Center(
             child: IndexedStack(
               index: _selectedIndex,
-              children: [..._pages],
+              children: [
+                HomeScreen(book: widget.book),
+                Icon(
+                  Icons.camera,
+                  size: 150,
+                ),
+                Icon(
+                  Icons.chat,
+                  size: 150,
+                ),
+              ],
             ),
           ),
         ),
@@ -76,7 +74,7 @@ class FrameScreenState extends State<FrameScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings),
-              label: 'Voice player',
+              label: 'Settings',
             ),
           ],
         ),
