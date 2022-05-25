@@ -1,11 +1,11 @@
 # English for Everyone Client 📖
+This client is only available in **Beta** version! It' still in progress.
 
-Only available in **Beta** version! It' still in progress.
-
+## About English for Everyone
 > English for Everyone is a smart, simple new way to teach yourself the English language. This highly visual course uses graphics and pictures instead of wordy explanations, making vocab and grammar easy to remember. And with extensive supporting audio, and innovative exercises covering all the core language skills, learning English has never been easier. 
 
 
-# ScreenShot
+## Screenshot
 Some pictures about the app 📷
 
 <table align="">
