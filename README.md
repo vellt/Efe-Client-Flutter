@@ -1,6 +1,9 @@
 # English for Everyone Client 📖
 This client is only available in **Beta** version! It's still in progress. In this you can already choose every course book from courses of dkefe, and you can listen to the lesson's sounds of the choosed course book. This project based on GetX pattern. 
 
+## Download 📲
+<a href="https://github.com/vellt/Efe-Client-Flutter/releases/download/v0.0.1/app-release.apk">Android v0.0.1 Beta</a>
+
 ## About English for Everyone
 > English for Everyone is a smart, simple new way to teach yourself the English language. This highly visual course uses graphics and pictures instead of wordy explanations, making vocab and grammar easy to remember. And with extensive supporting audio, and innovative exercises covering all the core language skills, learning English has never been easier. 
 
@@ -8,7 +11,7 @@ This client is only available in **Beta** version! It's still in progress. In th
 ## Screenshot
 Some pictures about the app 📷
 -->
-
+## View 
 <table>
   <tr >
     <th>Book Chooser View</th>
