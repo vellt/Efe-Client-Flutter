@@ -1,5 +1,15 @@
 # English for Everyone Client 📖
+
+![visitors](https://visitor-badge.glitch.me/badge?right_color=teal&page_id=vellt/Efe-Client-Flutter) 
+![Web 1280 – 1]( https://img.shields.io/badge/made%20with-flutter-blue?style=flat)
+![Web 1280 – 1]( https://img.shields.io/badge/with-GetX-red?style=flat)
+[![License](https://img.shields.io/badge/license-MIT-orange)](./LICENSE)
+![Web 1280 – 1]( https://img.shields.io/badge/-open%20source-wheat)
+
+
 This client is only available in **Beta** version! It's still in progress. In this you can already choose every course book from courses of dkefe, and you can listen to the lesson's sounds of the choosed course book. This project based on GetX pattern. 
+
+
 
 ## Download 📲
 <a href="https://github.com/vellt/Efe-Client-Flutter/releases/download/v0.0.1/app-release.apk">Android v0.0.1 Beta</a>
