@@ -41,26 +41,19 @@ class HomeScreen2 extends StatelessWidget {
           playerController.tempAudioIndex.value = i;
           _showBottomSheet(context, isHoovered: true);
         },
-        isActive:
-            false /*(i ==
-                  playerController.currentAtTheMomentPlayedAudioIndex.value) &&
-              playerController.isPlaying.value &&
-              playerController.currentLessonID ==
-                  apiLessonController.getLesson.id*/
-        ,
-        isLoading: false
-        /*(i == playerController.currentAtTheMomentPlayedAudioIndex.value &&
-                      playerController.duration.value == Duration(seconds: 0) &&
-                      !playerController.isPlaying.value) &&
-                  playerController.currentLessonID ==
-                      apiLessonController.getLesson.id*/
-        ,
-        isPlaying: false
-        /*(i == playerController.currentAtTheMomentPlayedAudioIndex.value &&
-                  playerController.isPlaying.value &&
-                  playerController.currentLessonID ==
-                      apiLessonController.getLesson.id)*/
-        ,
+        isActive: (i == playerController.currentAudioIndex.value) &&
+            playerController.isPlaying.value &&
+            playerController.currentLessonIndex.value ==
+                apiLessonController.selectedLessonIndex.value,
+        isLoading: (i == playerController.currentAudioIndex.value &&
+                playerController.duration.value == Duration(seconds: 0) &&
+                !playerController.isPlaying.value) &&
+            playerController.currentLessonIndex.value ==
+                apiLessonController.selectedLessonIndex.value,
+        isPlaying: (i == playerController.currentAudioIndex.value &&
+            playerController.isPlaying.value &&
+            playerController.currentLessonIndex.value ==
+                apiLessonController.selectedLessonIndex.value),
       ));
     }
     return temp;

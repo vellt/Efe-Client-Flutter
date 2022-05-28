@@ -42,6 +42,25 @@ class AudioWidget extends StatelessWidget {
               height: 38.w,
               child: Stack(
                 children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 10.sp, top: 10.sp),
+                    child: Container(
+                        height: 23.sp,
+                        width: 23.sp,
+                        child: Center(
+                          child: Text(
+                            (id + 1).toString(),
+                            style: TextStyle(
+                                color: Color(0xFFBBBBBB),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12.sp),
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15.sp),
+                        )),
+                  ),
                   if (isPlaying)
                     SpinKitRipple(
                       color: Color(0xFFD6D6D6),
