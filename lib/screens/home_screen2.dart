@@ -45,11 +45,7 @@ class HomeScreen2 extends StatelessWidget {
             playerController.isPlaying.value &&
             playerController.currentLessonIndex.value ==
                 apiLessonController.selectedLessonIndex.value,
-        isLoading: (i == playerController.currentAudioIndex.value &&
-                playerController.duration.value == Duration(seconds: 0) &&
-                !playerController.isPlaying.value) &&
-            playerController.currentLessonIndex.value ==
-                apiLessonController.selectedLessonIndex.value,
+        isLoading: false,
         isPlaying: (i == playerController.currentAudioIndex.value &&
             playerController.isPlaying.value &&
             playerController.currentLessonIndex.value ==
