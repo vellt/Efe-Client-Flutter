@@ -7,22 +7,20 @@ import 'package:uk_vocabulary_builder_flutter/screens/book_chooser_screen.dart';
 import 'package:uk_vocabulary_builder_flutter/screens/frame_screen.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 
-void main() async {
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-    statusBarColor: Colors.white,
-    statusBarIconBrightness: Brightness.dark,
-  ));
+import 'model/lesson.dart';
 
-  //ez a legelő lepes, amikoris kijóvélasztjuk milyen könyvet akarunk megnyitni, elalapján
-  /* EfeController efeLessonController = EfeController();
-  var elements = await efeLessonController.getBooks();
-  print("----------${elements[0].route}");*/
+void main() async {
+  /*ApiLessonController apiLessonController =
+      ApiLessonController("vocabulary-builder");
+  await apiLessonController.onInit();
+  print(apiLessonController.lessons
+      .where((element) => (element.id == "2.3"))
+      .first
+      .audios[9]
+      .title);*/
 
   runApp(MyApp());
-  //runApp(BookChooser());
 }
-
-//GlobalKey<FrameScreenState> frameState = GlobalKey();
 
 class MyApp extends StatelessWidget {
   @override
@@ -33,7 +31,7 @@ class MyApp extends StatelessWidget {
           title: kAppTitle,
           debugShowCheckedModeBanner: false,
           theme: kTheme,
-          home: SafeArea(child: BookChooser()), //FrameScreen()),
+          home: SafeArea(child: BookChooser()),
         );
       },
     );

@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:sizer/sizer.dart';
 import 'package:uk_vocabulary_builder_flutter/controllers/api_lesson_controller.dart';
 import 'package:uk_vocabulary_builder_flutter/controllers/player_controller.dart';
+import 'package:uk_vocabulary_builder_flutter/model/audio.dart';
 import 'package:uk_vocabulary_builder_flutter/model/book.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 import 'package:uk_vocabulary_builder_flutter/widgets/audio_widget.dart';
@@ -14,7 +15,12 @@ import 'package:uk_vocabulary_builder_flutter/widgets/home_appbar_content.dart';
 import 'package:uk_vocabulary_builder_flutter/widgets/audio_player.dart';
 
 class HomeScreen extends StatelessWidget {
-  late Book book;
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
+  /*late Book book;
   HomeScreen({required this.book}) {
     apiLessonController.lessonRoute = book.route;
   }
@@ -33,43 +39,78 @@ class HomeScreen extends StatelessWidget {
     for (var i = 0; i < apiLessonController.getLesson.audios.length; i++) {
       var audioData = apiLessonController.getLesson.audios[i];
       temp.add(AudioWidget(
-        id: i,
-        audioData: audioData,
-        onPressed: () => playerController.play(i),
-        onLongPressed: () => _showBottomSheet(context),
-        isActive: false,
-        isLoading: false,
-        isPlaying: false,
-      ));
+          id: i,
+          audioData: audioData,
+          onPressed: () {
+            playerController.play(i, apiLessonController.getLesson.id);
+          },
+          onLongPressed: () {
+            playerController.currentPlayedAudioIndex.value = i;
+            _showBottomSheet(context, isHoovered: true);
+          },
+          isActive: (i ==
+                  playerController.currentAtTheMomentPlayedAudioIndex.value) &&
+              playerController.isPlaying.value &&
+              playerController.currentLessonID ==
+                  apiLessonController.getLesson.id,
+          isLoading:
+              (i == playerController.currentAtTheMomentPlayedAudioIndex.value &&
+                      playerController.duration.value == Duration(seconds: 0) &&
+                      !playerController.isPlaying.value) &&
+                  playerController.currentLessonID ==
+                      apiLessonController.getLesson.id,
+          isPlaying:
+              (i == playerController.currentAtTheMomentPlayedAudioIndex.value &&
+                  playerController.isPlaying.value &&
+                  playerController.currentLessonID ==
+                      apiLessonController.getLesson.id)));
     }
     return temp;
   }
 
   //betölti a lejátszót
-  void _showBottomSheet(BuildContext context) {
+  void _showBottomSheet(BuildContext context, {required bool isHoovered}) {
+    playerController.thePlayerIsInPreviewMode.value = isHoovered;
     showModalBottomSheet(
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       context: context,
       builder: (context) {
         return Obx(
-          () => CustomBottomSheet(
-            title: Text(
-              apiLessonController.getLesson
-                  .audios[playerController.currentPlayedAudioIndex.value].title,
-              style: kAudioPlayerTitleTextStyle,
-            ),
-            child: audioPlayer(context, playerController: playerController),
-            children: [
-              audioPlayer(context, playerController: playerController),
-              bottomSheetListItem(
-                context,
-                icon: Icons.add,
-                title: 'Add to favorites',
-                onClick: () => print("added favorite"),
+          () {
+            print("22222222 ${playerController.currentLessonID}");
+            print(apiLessonController.getLessonByUniqueIndex(
+                    key: playerController.currentLessonID) ==
+                null);
+            */ /* print(apiLessonController
+                .getLessonByUniqueIndex(key: playerController.currentLessonID)
+                .audios
+                .length);*/ /*
+            //[playerController.currentPlayedAudioIndex.value].title)
+            return CustomBottomSheet(
+              title: Text(
+                apiLessonController
+                    .getLesson
+                    .audios[playerController.currentPlayedAudioIndex.value]
+                    .title,
+                style: kAudioPlayerTitleTextStyle,
               ),
-            ],
-          ),
+              children: [
+                ((!playerController.thePlayerIsInPreviewMode.value))
+                    ? audioPlayer(context,
+                        playerController: playerController,
+                        lessonID: apiLessonController.getLesson.id)
+                    : bottomSheetListItem(context,
+                        icon: Icons.play_arrow,
+                        title: 'Play this sound', onClick: () {
+                        playerController.thePlayerIsInPreviewMode.value = false;
+                        playerController.play(
+                            playerController.currentPlayedAudioIndex.value,
+                            apiLessonController.getLesson.id);
+                      }),
+              ],
+            );
+          },
         );
       },
     );
@@ -217,7 +258,8 @@ class HomeScreen extends StatelessWidget {
                               padding: EdgeInsets.only(right: 10.sp), //15 volt!
                               child: FloatingActionButton(
                                 backgroundColor: Color(0xFF707070),
-                                onPressed: () => _showBottomSheet(context),
+                                onPressed: () => _showBottomSheet(context,
+                                    isHoovered: false),
                                 child: Stack(
                                   children: [
                                     SpinKitRipple(
@@ -246,5 +288,5 @@ class HomeScreen extends StatelessWidget {
             );
           }
         });
-  }
+  }*/
 }

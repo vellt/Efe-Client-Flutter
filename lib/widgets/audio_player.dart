@@ -7,6 +7,7 @@ import 'package:uk_vocabulary_builder_flutter/utils/duration_extensions.dart';
 Widget audioPlayer(
   BuildContext context, {
   required PlayerController playerController,
+  required int lessonIndex,
 }) {
   return Column(
     children: [
@@ -50,7 +51,8 @@ Widget audioPlayer(
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: 25.sp, left: 25.sp),
+                padding:
+                    EdgeInsets.only(right: 25.sp, left: 25.sp, bottom: 20.sp),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -60,7 +62,7 @@ Widget audioPlayer(
                         child: InkWell(
                           // Splash color
                           onTap: () {
-                            playerController.back();
+                            playerController.back(lessonIndex);
                           },
                           child: SizedBox(
                             width: 60.sp,
@@ -102,7 +104,7 @@ Widget audioPlayer(
                         child: InkWell(
                           // Splash color
                           onTap: () {
-                            playerController.next();
+                            playerController.next(lessonIndex);
                           },
                           child: SizedBox(
                             width: 60.sp,

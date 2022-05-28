@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
-class CustomBottomSheet extends StatefulWidget {
+class CustomBottomSheet extends StatelessWidget {
   const CustomBottomSheet({
     required this.title,
-    required this.child,
     required this.children,
   });
 
   final Widget title;
-  final Widget child;
   final List<Widget> children;
 
-  @override
-  _CustomBottomSheetState createState() => _CustomBottomSheetState();
-}
-
-class _CustomBottomSheetState extends State<CustomBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,18 +23,48 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _dragLine(context),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Padding(
-              child: widget.title,
-              padding: EdgeInsets.only(
-                  top: 15.sp, right: 25.sp, left: 25.sp, bottom: 18.sp),
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
+                child: Padding(
+                  child: title,
+                  padding: EdgeInsets.only(
+                      top: 15.sp, right: 5.sp, left: 25.sp, bottom: 18.sp),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 10.5.sp, right: 15.sp),
+                child: ClipOval(
+                  child: Material(
+                    color: Colors.transparent, // Button color
+
+                    child: InkWell(
+                      splashColor: Colors.grey.shade200, // Splash color
+                      hoverColor: Colors.transparent,
+                      highlightColor: Colors.grey.shade200,
+                      onTap: () {
+                        print("added to favorites from heart");
+                      },
+                      child: SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: Icon(
+                            Icons.favorite,
+                            size: 26.sp,
+                            color: Color(0xFFE8E8E8),
+                          )),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           Container(
             color: Colors.white,
             child: Column(
-              children: widget.children,
+              children: children,
             ),
           ),
         ],

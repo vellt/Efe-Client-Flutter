@@ -32,13 +32,18 @@ Widget bottomSheetListItem(
           child: Row(
             mainAxisAlignment: mainAxisAlignment ?? MainAxisAlignment.start,
             children: [
-              if (icon != null) Icon(icon),
+              if (icon != null)
+                Icon(
+                  icon,
+                  size: 28.sp,
+                  color: Color(0xFF4A4A4A),
+                ),
               SizedBox(
                 width: 3.w,
               ),
               Text(
                 title,
-                style: TextStyle(fontSize: 15.sp, color: Color(0xFF4A4A4A)),
+                style: TextStyle(fontSize: 17.sp, color: Color(0xFF4A4A4A)),
               ),
             ],
           ),

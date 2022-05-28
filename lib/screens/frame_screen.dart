@@ -5,6 +5,7 @@ import 'package:uk_vocabulary_builder_flutter/model/book.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 
 import 'home_screen.dart';
+import 'home_screen2.dart';
 
 //landing page
 //https://blog.criarsolutions.com/bottom-navigation-bar-in-flutter-using-getx-e88da21bc126
@@ -37,7 +38,7 @@ class FrameScreenState extends State<FrameScreen> {
             child: IndexedStack(
               index: _selectedIndex,
               children: [
-                HomeScreen(book: widget.book),
+                HomeScreen2(book: widget.book),
                 Icon(
                   Icons.camera,
                   size: 150,

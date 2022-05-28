@@ -5,112 +5,96 @@ import 'package:uk_vocabulary_builder_flutter/model/lesson.dart';
 import 'package:uk_vocabulary_builder_flutter/model/audio.dart';
 
 class ApiLessonController extends GetxController {
-  String lessonRoute = "";
+  Rx<int> selectedLessonIndex = 0.obs;
+  final List<Lesson> lessons = [];
+  String _lessonRoute = "";
+
+  ApiLessonController(String routeNameOfLesson) {
+    _lessonRoute = routeNameOfLesson;
+  }
 
   @override
   Future onInit() async {
     super.onInit();
-    //lehivja a hálózatrol a nyers json állományt
-    print(lessonRoute);
-    NetworkHelper networkHelper = NetworkHelper(Uri.parse(lessonRoute));
-    print(lessonRoute);
-    _data = await networkHelper.getData();
-    if (_data != null)
-      _lesson.value =
-          openLesson(_lessonUniqueIndex); //beállítjuk a lesson adatát
-  }
-
-  var _data; //a nyers json anyag
-  int _index = 0;
-  String _lessonUniqueIndex = "1.1";
-  final _lesson = Rxn<Lesson>(); //current lesson
-
-  Lesson get getLesson => _lesson.value ?? Lesson.empty(); //current lesson
-
-  bool get isFetchingSuccess =>
-      _data != null; //hiztos hogy jött adat a szerverről
-
-  //Betölti a lesson-t argumentumban megadott egyedi azonosito alapján
-  Lesson openLesson(String lessonUniqueIndex) {
-    if (getLessonIDs().contains(lessonUniqueIndex)) {
-      _index = getLessonIDs().indexOf(lessonUniqueIndex);
-      _lessonUniqueIndex = lessonUniqueIndex;
-      _lesson.value = _getLessonByUniqueIndex(key: _lessonUniqueIndex);
-    }
-    update();
-    return _lesson.value!;
-  }
-
-  //következő lecke betöltése
-  Lesson? nextLesson() {
-    if ((_index + 1) != getLessonIDs().length) {
-      _lesson.value = _getLessonByUniqueIndex(key: getLessonIDs()[++_index]);
-    }
-    update();
-    return _lesson.value;
-  }
-
-  //előző lecke betöltése
-  Lesson? backLesson() {
-    if ((_index - 1) != -1) {
-      _lesson.value = _getLessonByUniqueIndex(key: getLessonIDs()[--_index]);
-    }
-    return _lesson.value;
-  }
-
-  //lehivja az osszes lecke azonositojat
-  List<String> getLessonIDs() {
-    List<String> lessonIDs = [];
+    NetworkHelper networkHelper = NetworkHelper(Uri.parse(_lessonRoute));
+    var _data = await networkHelper.getData();
     if (_data != null) {
+      int index = 0;
       for (var item in _data["ref"]["documents"]) {
-        for (var i = 0; i < item["data"]["exercises"].length; i++) {
-          lessonIDs.add("${item["data"]["index"]}.${i + 1}");
+        for (var lesson in item["data"]["exercises"]) {
+          String id = "${item["data"]["index"]}.${lesson["index"]}";
+          String title = lesson["customTitle"] ?? item["data"]["title"];
+          String mainTitle = title.split("-")[0];
+          String? subtitle =
+              title.split("-").length == 2 ? title.split("-")[1].trim() : null;
+          List<Audio> audios = [];
+          for (var audio in lesson["audio"]) {
+            String title = (audio["text"] ?? audio["number"] ?? "").toString();
+            String voiceUrl = '${audio["filepath"]}${audio["filename"]}';
+            audios.add(
+                Audio(title: title, voiceUrl: voiceUrl, isFavorite: false));
+          }
+
+          lessons.add(
+            Lesson(
+              position: index++,
+              title: mainTitle,
+              id: id,
+              audios: audios,
+              subtitle: subtitle,
+            ),
+          );
         }
       }
     }
-    print("lesson ids length: ${lessonIDs.length}");
-    return lessonIDs;
+
+    ever(
+        selectedLessonIndex,
+        (_) => print(
+            "$_ has been changed: ${selectedLesson.title}\n${selectedLesson.audios.length}"));
   }
 
-  //az aktulis lesson adatot lehivja a könyv egyedi indexe alapján
-  Lesson _getLessonByUniqueIndex({required String key}) {
-    if (_data != null) {
-      int firstIndex = int.parse(key.split('.')[0]) - 1;
-      int secondIndex = int.parse(key.split('.')[1]) - 1;
-      String title = _data["ref"]["documents"][firstIndex]["data"]["exercises"]
-              [secondIndex]["customTitle"] ??
-          _data["ref"]["documents"][firstIndex]["data"]["title"];
-      print(title);
-      _lessonUniqueIndex = key;
-      _lesson.value = Lesson(
-        id: key,
-        title: title.split("-")[0],
-        subtitle:
-            title.split("-").length == 2 ? title.split("-")[1].trim() : null,
-        audios: _getAudioData(_data["ref"]["documents"][firstIndex]["data"]
-            ["exercises"][secondIndex]["audio"]),
-      );
+  //aktuális lecke
+  Lesson get selectedLesson => lessons[selectedLessonIndex.value];
+
+  //következő lecke betöltése
+  int nextLesson() {
+    if ((selectedLessonIndex.value + 1) != lessons.length) {
+      selectedLessonIndex.value++;
     }
-    return _lesson.value!;
+    return selectedLessonIndex.value;
   }
 
-  List<Audio> _getAudioData(var audios) {
-    List<Audio> temp = [];
-    for (var audio in audios) {
-      temp.add(Audio(
-        title: (audio["text"] ?? audio["number"] ?? "").toString(),
-        voiceUrl: '${audio["filepath"]}${audio["filename"]}',
-        isFavorite: false,
-      ));
+  //előző lecke betöltése
+  int backLesson() {
+    if ((selectedLessonIndex.value - 1) != -1) {
+      selectedLessonIndex.value--;
     }
-    return temp;
+    return selectedLessonIndex.value;
   }
 
-  List<String> getAudioSources() {
-    List<String> temp = [];
-    for (var audio in getLesson.audios) {
-      temp.add(audio.voiceUrl);
+  //megnyit egy uj lecket
+  int openLesson(String id) {
+    var match = lessons.where((element) => element.id == id);
+    if (match.length != 0) {
+      selectedLessonIndex.value = match.map((e) => e.position).first;
     }
-    return temp;
+    return selectedLessonIndex.value;
+  }
+
+  List<String> getUrlSourceOfAudios() {
+    return lessons
+        .where((element) => (element.id == selectedLesson.id))
+        .first
+        .audios
+        .map((e) => e.voiceUrl)
+        .toList();
+  }
+
+  List<Audio> getAudioDataOfSelectedLesson() {
+    return lessons
+        .where((element) => element.id == selectedLesson.id)
+        .first
+        .audios;
   }
 }

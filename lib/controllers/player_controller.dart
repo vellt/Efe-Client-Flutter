@@ -9,8 +9,16 @@ class PlayerController extends GetxController {
   Rx<Duration> position = Duration(seconds: 0).obs;
   Rx<PlayerState> playState = PlayerState.STOPPED.obs;
 
-  final Rx<int> currentPlayedAudioIndex = 0.obs;
+  final Rx<int> currentAudioIndex = 0.obs;
+  final Rx<int> tempAudioIndex = 0.obs;
+  final Rx<bool> thePlayerIsInPreviewMode = false.obs;
+  final Rx<int> currentLessonIndex = 0.obs;
+
   List<String> audioSources = <String>[];
+
+  PlayerController({required int currentLessonIndex}) {
+    this.currentLessonIndex.value = currentLessonIndex;
+  }
 
   Rx<bool> get isPlaying => (playState.value == PlayerState.PLAYING).obs;
 
@@ -19,12 +27,10 @@ class PlayerController extends GetxController {
     super.onInit();
 
     _advancedPlayer.onDurationChanged.listen((d) {
-      print("aktuélis duratció: ${d}");
       duration.value = d;
     });
 
     _advancedPlayer.onAudioPositionChanged.listen((p) {
-      print("aktuélis pozicoo: ${p}");
       position.value = p;
     });
 
@@ -35,6 +41,17 @@ class PlayerController extends GetxController {
     _advancedPlayer.onPlayerCompletion.listen((event) {
       position.value = duration.value;
     });
+
+    ever(currentAudioIndex,
+        (_) => print("currentAudioIndex: ${currentAudioIndex.value}"));
+    ever(tempAudioIndex,
+        (_) => print("tempAudioIndex: ${tempAudioIndex.value}"));
+    ever(
+        thePlayerIsInPreviewMode,
+        (_) => print(
+            "thePlayerIsInPreviewMode: ${thePlayerIsInPreviewMode.value}"));
+    ever(currentLessonIndex,
+        (_) => print("currentLessonIndex: ${currentLessonIndex.value}"));
   }
 
   @override
@@ -53,10 +70,13 @@ class PlayerController extends GetxController {
   }
 
   //play from the 0 second
-  void play(int index) async {
+  void play(int index, {required int of}) async {
+    //maybePlayedAudioIndex.value = index;
     print(
         "start: ${position.value.timeFormat} end: ${duration.value.timeFormat}");
-    currentPlayedAudioIndex.value = index;
+    currentAudioIndex.value = index;
+    tempAudioIndex.value = index;
+    currentLessonIndex.value = of;
     stop();
     resume();
   }
@@ -64,7 +84,7 @@ class PlayerController extends GetxController {
   //play
   void resume() async {
     await _advancedPlayer.play(
-        "${secret.assetsBaseUrl}${audioSources[currentPlayedAudioIndex.value]}");
+        "${secret.assetsBaseUrl}${audioSources[currentAudioIndex.value]}");
   }
 
   //pause
@@ -80,13 +100,13 @@ class PlayerController extends GetxController {
     }
   }
 
-  void next() {
-    if (currentPlayedAudioIndex.value + 1 != audioSources.length)
-      play(++currentPlayedAudioIndex.value);
+  void next(int of) {
+    if (currentAudioIndex.value + 1 != audioSources.length)
+      play(++currentAudioIndex.value, of: of);
   }
 
-  void back() {
-    if (currentPlayedAudioIndex.value - 1 != -1)
-      play(--currentPlayedAudioIndex.value);
+  void back(int of) {
+    if (currentAudioIndex.value - 1 != -1)
+      play(--currentAudioIndex.value, of: of);
   }
 }
