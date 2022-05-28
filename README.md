@@ -14,6 +14,7 @@ This client is only available in **Beta** version! It's still in progress. In th
 ## Download 📲
 - <a href="https://github.com/vellt/Efe-Client-Flutter/releases/download/v0.0.1/app-release.apk">(Android) v0.0.1 Beta</a>
 - <a href="https://github.com/vellt/Efe-Client-Flutter/releases/download/v0.0.2/app-release.apk">(Android) v0.0.2 Beta</a>
+- <a href="https://github.com/vellt/Efe-Client-Flutter/releases/download/v0.0.3/app-release.apk">(Android) v0.0.3 Beta</a>
 
 
 
