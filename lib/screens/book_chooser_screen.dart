@@ -1,14 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sizer/sizer.dart';
 import 'package:uk_vocabulary_builder_flutter/controllers/api_books_controller.dart';
 import 'package:uk_vocabulary_builder_flutter/screens/frame_screen.dart';
+import 'package:uk_vocabulary_builder_flutter/screens/landing_screen.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 import 'package:get/get.dart';
+import 'package:flutter_statusbarcolor_ns/flutter_statusbarcolor_ns.dart';
 
 class BookChooser extends StatelessWidget {
   BookChooser({Key? key}) : super(key: key);
-  ApiBooksController apiBooksController = ApiBooksController();
+  ApiBooksController apiBooksController = Get.put(ApiBooksController());
 
   Widget _buildRow(int index) {
     return TextButton(
@@ -67,6 +70,7 @@ class BookChooser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //FlutterStatusbarcolor.setStatusBarColor(Colors.white);
     return FutureBuilder(
         future: apiBooksController.onInit(),
         builder: (context, snapshot) {
@@ -79,6 +83,17 @@ class BookChooser extends StatelessWidget {
               //sikerült adatot betölteni
               return Scaffold(
                 appBar: AppBar(
+                  backgroundColor: Colors.white,
+                  systemOverlayStyle: SystemUiOverlayStyle(
+                    // Status bar color
+                    statusBarColor: Colors.white,
+
+                    // Status bar brightness (optional)
+                    statusBarIconBrightness:
+                        Brightness.dark, // For Android (dark icons)
+                    statusBarBrightness:
+                        Brightness.light, // For iOS (dark icons)
+                  ),
                   bottom: bottomAppBar(),
                 ),
                 body: ListView.separated(
@@ -99,9 +114,8 @@ class BookChooser extends StatelessWidget {
                         .chevron_forward), //Icons.navigate_next //Icons.save
                     onPressed: () {
                       print(apiBooksController.selectedBook.title);
-                      Get.to(FrameScreen(
-                        book: apiBooksController.selectedBook,
-                      ));
+                      Get.to(
+                          LandingScreen()); //FrameScreen(book: apiBooksController.selectedBook,)
                     },
                     backgroundColor: Color(0xFF707070),
                   ),

@@ -2,16 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 import 'package:uk_vocabulary_builder_flutter/model/book.dart';
+import 'package:uk_vocabulary_builder_flutter/screens/settings_screen.dart';
 import 'package:uk_vocabulary_builder_flutter/utils/constants.dart';
 
+import 'favorites_screen.dart';
 import 'home_screen.dart';
-import 'home_screen2.dart';
 
-//landing page
-//https://blog.criarsolutions.com/bottom-navigation-bar-in-flutter-using-getx-e88da21bc126
 class FrameScreen extends StatefulWidget {
-  late Book book;
-  FrameScreen({required this.book});
+  //late Book book;
+  //FrameScreen({required this.book});
   @override
   FrameScreenState createState() => FrameScreenState();
 }
@@ -32,27 +31,14 @@ class FrameScreenState extends State<FrameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Expanded(
-          child: Center(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: [
-                HomeScreen2(book: widget.book),
-                Icon(
-                  Icons.camera,
-                  size: 150,
-                ),
-                Icon(
-                  Icons.chat,
-                  size: 150,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ] //_pages[_selectedIndex],
-          ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          HomeScreen(),
+          FavoritesScreen(),
+          SettingsScreen(),
+        ],
+      ),
       bottomNavigationBar: SizedBox(
         height: 11.0.h,
         child: BottomNavigationBar(

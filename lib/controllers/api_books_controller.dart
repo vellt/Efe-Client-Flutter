@@ -26,9 +26,11 @@ class ApiBooksController extends GetxController {
     var data = await networkHelper.getData();
     if (data != null) {
       for (var dataItem in data) {
+        int index = dataItem['data']['index'];
         String route = dataItem['data']['route'];
         String title = dataItem['data']['title'];
         books.add(Book(
+          id: index,
           title: title,
           route: route,
         ));
@@ -36,8 +38,9 @@ class ApiBooksController extends GetxController {
     }
 
     ever(
-        selectedIndex,
-        (_) => print(
-            "$_ has been changed: ${selectedBook.title}\n${selectedBook.route}"));
+      selectedIndex,
+      (_) => print(
+          "$_ has been changed: ${selectedBook.title}\n${selectedBook.route} ${selectedBook.id}"),
+    );
   }
 }
